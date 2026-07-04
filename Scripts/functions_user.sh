@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ./config.sh
+
 alta_usuario() {
     echo -e "\n--- Alta de Usuario ---"
     read -p "Ingrese el nombre del nuevo usuario: " username
