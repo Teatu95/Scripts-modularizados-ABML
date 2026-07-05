@@ -1,4 +1,4 @@
-#|/bin/bash
+#!/bin/bash
 
 source ./config.sh
 source ./functions_user.sh
