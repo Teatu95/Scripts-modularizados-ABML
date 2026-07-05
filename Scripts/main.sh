@@ -2,7 +2,7 @@
 
 source ./config.sh
 source ./functions_user.sh
-source ./function_group.sh
+source ./functions_group.sh
 
 
 check_root
