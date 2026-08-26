@@ -54,7 +54,7 @@ if [ "$opp" -ne 3 ]; then
     done
 fi
 
-#Respaldo Remoto: Sincronización con el servidor remoto vía rsync (Alta Herramienta, la acabo de descubrir)
+#Respaldo Remoto, sincronizacion con el servidor remoto vía rsync (Alta Herramienta, la acabo de descubrir)
 echo "Enviando copia de seguridad al servidor remoto ($REMOTO_IP)..."
 rsync -avz "$NUEVA_CARPETA/" "$REMOTO_USER@$REMOTO_IP:$REMOTO_DIR/$FECHA/"
 
