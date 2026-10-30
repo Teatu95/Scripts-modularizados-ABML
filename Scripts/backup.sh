@@ -14,7 +14,7 @@ APACHEUBI="/var/www/html"
 #Se me hace mas facil crear todas las variables aca pero, ¿usted que piensa?
 
 #Verificamos variables de entorno
-if [ -z "$DISCO" ] || [ -z "$PUNTO_MONTAJE" ] || [ -z "$MAX_CARPETAS" ]; then
+if [ -z "$DISCO" ] || [ -z "$PUNTO_MONTAJE" ] || [ -z "$MAX_CARPETAS" ] ; then  #Poner las variables de entorno DB_USER, DB_PASS, DB_NAME, REMOTO_USER, REMOTO_IP, REMOTO_DIR, APACHEUBI
     echo "Error: Falta configurar DISCO, PUNTO_MONTAJE o MAX_CARPETAS en el entorno."
     exit 1
 fi
@@ -56,7 +56,7 @@ fi
 
 #Respaldo Remoto, sincronizacion con el servidor remoto vía rsync (Alta Herramienta, la acabo de descubrir)
 echo "Enviando copia de seguridad al servidor remoto ($REMOTO_IP)..."
-rsync -avz "$NUEVA_CARPETA/" "$REMOTO_USER@$REMOTO_IP:$REMOTO_DIR/$FECHA/"
+rsync -avz -e "ssh -p 22" "$NUEVA_CARPETA/" "$REMOTO_USER@$REMOTO_IP:$REMOTO_DIR/$FECHA/"
 
 #Rotación de Respaldos Viejos
 CANTIDAD=$(ls -1d "$PUNTO_MONTAJE"/* | grep -v "Scripts" | wc -l)
