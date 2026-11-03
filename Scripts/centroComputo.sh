@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Esta piola esto vistea profe, en vez de un poner un source de una primer verificas que exista
 if [ -f "./config.sh" ]; then
     source ./config.sh
 else
@@ -8,14 +7,85 @@ else
     exit 1
 fi
 
-# Esto que tengo en el config por si no ejecutas con el root
+if [ -f "./backup.sh" ]; then
+    source ./backup.sh
+else
+    echo "Error: No se encontró backup.sh"
+    exit 1
+fi
 check_root
 
-# Funcion para elegir un servicio,
+# --- FUNCIONES ---
+
 select_service() {
     echo -e "\n${YELLOW}Servicios disponibles:${NC} ssh | apache2 | mysql | rsync"
     echo -n "Escribí el nombre del servicio a administrar: "
     read SERVICIO
+}
+
+restaurar_ultimo_backup() {
+    echo "================================================"
+    echo "    Iniciando proceso de restauracion de datos."
+    echo "================================================="
+
+    # Buscar el backup
+    if ! mountpoint -q "$PUNTO_MONTAJE"; then
+        echo "Montando el disco en $PUNTO_MONTAJE"
+        sudo mount "$DISCO" "$PUNTO_MONTAJE" || { echo "No se pudo montar el disco."; return 1; }
+    fi    
+    
+    echo "Identificando la copia de seguridad más reciente...."
+    local ultimo_backup
+    ultimo_backup=$(ls -td "$PUNTO_MONTAJE"/* 2>/dev/null | grep -v "Scripts" | head -n 1)
+    
+    if [ -z "$ultimo_backup" ]; then
+        echo "No se encontraron backups en $PUNTO_MONTAJE."
+        sudo umount "$PUNTO_MONTAJE" 2>/dev/null
+        return 1
+    fi
+    echo "Último respaldo detectado en: $ultimo_backup"
+
+    # Apache
+    echo "Deteniendo Apache temporalmente..."
+    sudo systemctl stop apache2
+    if [ -f "$ultimo_backup/html.backup.tar.gz" ]; then
+        echo "Restaurando el directorio web..."
+        sudo rm -rf "${APACHEUBI:?}/*"
+        sudo tar -xzf "$ultimo_backup/html.backup.tar.gz" -C "$(dirname "$APACHEUBI")"
+        echo "Archivos web restaurados con éxito."
+    else
+        echo "[ADVERTENCIA] No se localizó html.backup.tar.gz en el respaldo."
+    fi
+    echo "Reanudando servicio Apache..."
+    sudo systemctl start apache2
+
+    if [ -f "$ultimo_backup/db_backup.sql.gz" ]; then
+        echo "Procesando base de datos..."
+        
+        cp "$ultimo_backup/db_backup.sql.gz" /tmp/
+        gunzip -f /tmp/db_backup.sql.gz
+
+        echo "Borrando la base de datos anterior. "
+        mysql -u "$DB_USER" -p"$DB_PASS" -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"
+
+        echo "Cargando datos del archivo sql"
+        mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < /tmp/db_backup.sql
+        
+        if [ $? -eq 0 ]; then
+            echo "Base de datos restaurada."
+        else
+            echo "Hubo un problema al importar el archivo SQL."
+        fi
+        rm -f /tmp/db_backup.sql
+    else
+        echo "No se encontró el archivo de base de datos db_backup.sql.gz"
+    fi
+
+    echo "Desmontando disco"
+    sudo umount "$PUNTO_MONTAJE"
+    echo "========================="
+    echo " Restauración completa.."
+    echo "========================="
 }
 
 while true; do
@@ -63,10 +133,20 @@ while true; do
             log_message "Servicio $SERVICIO inhabilitado"
             ;;
         6)
-            # Configuración de red, no tengo la menor idea de que poner, supongo que apagar prenderlo, capaz cambiar la ip
+            echo "1) Mostrar ip"
+            echo "2) Reiniciar NetworkManager"
+            echo "3) Volver al menú principal"
+            echo -n "Ingrese opcion: "
+            read redopcion
+            case $redopcion in
+                1) ip -br a ;;
+                2) systemctl restart NetworkManager ;;
+                3) echo "Volviendo..." ;;
+                *) echo -e "Opcion invalida." ;;
+            esac
             ;;
         7)
-            # Cargar backup no se hacerlo tengo que buscar, igual es la primera version, creo que es presentable
+            restaurar_ultimo_backup
             ;;
         8)
             echo "Saliendo..."
