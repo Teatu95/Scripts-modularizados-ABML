@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$EUID" -ne 0 ]; then
-  echo "¡Ey! Necesitas ejecutar este script como root (usa sudo)."
+  echo "Ejecute como sudo"
   exit 1
 fi
 
@@ -114,7 +114,7 @@ fi
 echo "Permisos aplicados correctamente"
 
 #  Crear archivo de entorno (.env.backup)
-CONFIG_FILE="$REPO_DIR/.env.backup" #De aca en adelante es casi todo recomendado por IA, estudie lo que hizo pero igualmente no lo hice, 
+CONFIG_FILE="$REPO_DIR/.env.backup"
 echo "Guardando las variables de entorno en $CONFIG_FILE..."
 cat <<EOF > "$CONFIG_FILE"
 DB_USER="$DB_USER"
@@ -128,7 +128,7 @@ PUNTO_MONTAJE="$PUNTO_MONTAJE"
 MAX_CARPETAS="$MAX_CARPETAS"
 DISCO="$DISCO"
 EOF
-
+#De aca en adelante es casi todo recomendado por IA, estudie lo que hizo pero igualmente no lo hice
 # Configurar la tarea en Cron
 echo ""
 echo "Programando la tarea automática en Cron para que corra todos los días a las 2:00 AM..."
@@ -140,5 +140,5 @@ CRON_JOB="0 2 * * * /bin/bash $BACKUP_SCRIPT_PATH >> /var/log/backup_abml.log 2>
 
 echo ""
 echo "=================================================="
-echo "    ¡Todo listo! El entorno quedó configurado."
+echo "    El entorno tuvo que quedar configurado."
 echo "=================================================="
