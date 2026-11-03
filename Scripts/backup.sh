@@ -1,14 +1,19 @@
 #!/bin/bash
-#Definición de Variables (Lleva el tilde en la o?)
-DB_USER="root"
-DB_PASS="Tcontraa"
-DB_NAME="nameee"
+#!/bin/bash
+f="/opt/Scripts-modularizados-ABML/.env.backup"
 
-REMOTO_USER="usuario_remoto"       #Useer del servidor de respaldo
-REMOTO_IP="192.168.1.50"           #IP del servidor de respaldo
-REMOTO_DIR="/var/backups/remotos"   #Carpeta destino del servidor remoto
+if [ -f "$f" ]; then
+  . "$f"
+else
+  DB_USER="root"
+  DB_PASS="Tcontraa"
+  DB_NAME="nameee"
+  REMOTO_USER="usuario_remoto"
+  REMOTO_IP="192.168.1.50"
+  REMOTO_DIR="/var/backups/remotos"
+  APACHEUBI="/var/www/html"
+fi #Esto fue creado a las apuradas, la idea seria sacarlo de aca y dejarlas en su archivo de configuracion pero anda asi que tabien
 
-APACHEUBI="/var/www/html" 
 
 #Profe, la verdad no estaba seguro si hacer todo esto variables de entorno
 #Se me hace mas facil crear todas las variables aca pero, ¿usted que piensa?
